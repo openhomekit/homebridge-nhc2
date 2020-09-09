@@ -123,6 +123,10 @@ class NHC2Platform implements DynamicPlatformPlugin {
         service: this.Service.Switch,
         handlers: [this.addTriggerCharacteristic],
       },
+      sunblind : {
+        service : this.Service.WindowCovering,
+        handlers : [this.addPositionChangeCharacteristic]
+      }
     };
 
     Object.keys(mapping).forEach(model => {
@@ -229,6 +233,22 @@ class NHC2Platform implements DynamicPlatformPlugin {
         CharacteristicEventTypes.SET,
         (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
           this.nhc2.sendTriggerBasicStateCommand(newAccessory.UUID);
+          callback();
+        },
+      );
+  };
+
+  private addPositionChangeCharacteristic =
+  ( newService: Service, newAccessory: PlatformAccessory ) => {
+    newService
+      .getCharacteristic(this.Characteristic.TargetPosition)
+      .on(
+        CharacteristicEventTypes.SET,
+        (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+          this.nhc2.sendPositionChangeCommand(
+            newAccessory.UUID,
+            value as number,
+          );
           callback();
         },
       );
