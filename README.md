@@ -2,9 +2,7 @@
 [![Version](http://img.shields.io/npm/v/@openhomekit/homebridge-nhc2.png)](https://www.npmjs.org/package/@openhomekit/homebridge-nhc2)
 [![License](https://img.shields.io/npm/l/@openhomekit/homebridge-nhc2.svg)](https://github.com/homebridge-nhc2/homebridge-nhc2/blob/master/LICENSE)
 [![Downloads](https://img.shields.io/npm/dt/@openhomekit/homebridge-nhc2.svg)](https://www.npmjs.org/package/@openhomekit/homebridge-nhc2)
-[![Build Status](https://travis-ci.com/homebridge-nhc2/homebridge-nhc2.svg?branch=master)](https://travis-ci.com/homebridge-nhc2/homebridge-nhc2)
-[![Dependencies](https://david-dm.org/homebridge-nhc2/homebridge-nhc2.svg)](https://david-dm.org/homebridge-nhc2/homebridge-nhc2)
-[![Gitter chat](https://badges.gitter.im/homebridge-nhc2/community.png)](https://gitter.im/homebridge-nhc2/community)
+[![Node.js Package](https://github.com/openhomekit/homebridge-nhc2/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/openhomekit/homebridge-nhc2/actions/workflows/npm-publish.yml)
 
 As of October 29, 2019 Niko has published their [Hobby API](https://www.niko.eu/en/campaign/niko-home-control/hobby-api) which allows end users to control their Niko Home Control 2 installation through the MQTT protocol.
 This homebridge plugin adds homekit support for a Niko Home Control 2 having the Hobby API defined as a connected service.
@@ -153,11 +151,7 @@ homebridge -D -U ./homebridge-dev
 This is very useful when you are already using your development machine to host a "real" Homebridge instance (with all your accessories) that you don't want to disturb.
 
 # Releasing a new version
-To release a new version it is sufficient to bump the version number, and make sure to push the tagged commit.
-Travis CI will recognize the tagged commit and publish the package to npmjs.
-```bash
-    npm version 2.0.0
-```
+To release a new version it is sufficient to bump the version number and push the changes, then create a new version on github that will create a tag for you. Github CI will see the new version and publish to NPM.
 
 Please make sure your released version is supported by [HOOBS](https://hoobs.org/), you can run HOOBS as a docker container for testing purposes.
 
