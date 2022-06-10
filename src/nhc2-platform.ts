@@ -1,6 +1,6 @@
-import { Device } from "@homebridge-nhc2/nhc2-hobby-api/lib/event/device";
-import { Event } from "@homebridge-nhc2/nhc2-hobby-api/lib/event/event";
-import { NHC2 } from "@homebridge-nhc2/nhc2-hobby-api/lib/NHC2";
+import { Device } from "@openhomekit/nhc2-hobby-api/lib/event/device";
+import { Event } from "@openhomekit/nhc2-hobby-api/lib/event/event";
+import { NHC2 } from "@openhomekit/nhc2-hobby-api/lib/NHC2";
 import {
   API,
   APIEvent,
@@ -47,7 +47,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
     private config: PlatformConfig,
     private api: API,
   ) {
-    this.log = new NHC2Logger(logger, config);
+    this.log = new NHC2Logger(this.logger, this.config);
     this.suppressedAccessories = config.suppressedAccessories || [];
     if (this.suppressedAccessories) {
       this.log.info("Suppressing accessories: ");
@@ -55,12 +55,12 @@ class NHC2Platform implements DynamicPlatformPlugin {
         this.log.info("  - " + acc);
       });
     }
-    this.nhc2 = new NHC2("mqtts://" + config.host, {
-      port: config.port || 8884,
-      clientId: config.clientId || "NHC2-homebridge",
-      username: config.username || "hobby",
-      password: config.password,
-      rejectUnauthorized: false,
+    this.nhc2 = new NHC2("mqtts://" + this.config.host, {
+       port: this.config.port || 8884,
+       clientId: this.config.clientId || "NHC2-homebridge",
+       username: this.config.username || "hobby",
+       password: this.config.password,
+       rejectUnauthorized: false,
     });
 
     this.log.info("NHC2Platform finished initializing!");
@@ -124,6 +124,18 @@ class NHC2Platform implements DynamicPlatformPlugin {
         handlers: [this.addTriggerCharacteristic],
       },
       sunblind : {
+        service : this.Service.WindowCovering,
+        handlers : [this.addPositionChangeCharacteristic]
+      },
+      venetianblind : {
+        service : this.Service.WindowCovering,
+        handlers : [this.addPositionChangeCharacteristic]
+      },
+      rolldownshutter : {
+        service : this.Service.WindowCovering,
+        handlers : [this.addPositionChangeCharacteristic]
+      },
+      gate : {
         service : this.Service.WindowCovering,
         handlers : [this.addPositionChangeCharacteristic]
       }
@@ -255,6 +267,14 @@ class NHC2Platform implements DynamicPlatformPlugin {
   };
 
   private processDeviceProperties(device: Device, service: Service) {
+
+    // Super hacky, but for some reason every device has two services, one we added and another "AccessoryInformation".
+    // We should not be modifying AccessoryInformation (This gives warnings);
+    // If a better solution comes along please create a PR
+    if (service.constructor.name === 'AccessoryInformation') {
+      return
+    };
+
     if (!!device.Properties) {
       device.Properties.forEach(property => {
         if (property.Status === "On" || property.BasicState === "On") {
@@ -269,15 +289,22 @@ class NHC2Platform implements DynamicPlatformPlugin {
             .updateValue(property.Brightness);
         }
         if (!! property.Position) {
+          const moving = device.Properties?.find(p => p.Moving)?.Moving === "True";
           service
             .getCharacteristic(this.Characteristic.CurrentPosition)
-            .updateValue(parseInt(property.Position));
-        }
-        if (!! property.Moving) {
+            .updateValue(parseInt(property.Position, 10));
+
           service
             .getCharacteristic(this.Characteristic.PositionState)
-            .updateValue(property.Moving == "True" ? 1 : 2);
-          /* TODO: find a way to determing INCREASING=1 or DECREASING=0 */
+            .updateValue(moving ? 1 : 2);
+            /* TODO: find a way to determing INCREASING=1 or DECREASING=0 */
+
+          if (!moving) {
+            service
+              .getCharacteristic(this.Characteristic.TargetPosition)
+              .updateValue(parseInt(property.Position, 10));
+          }
+
         }
       });
     }

@@ -1,7 +1,7 @@
 # homebridge-nhc2
-[![Version](http://img.shields.io/npm/v/@homebridge-nhc2/homebridge-nhc2.png)](https://www.npmjs.org/package/@homebridge-nhc2/homebridge-nhc2)
-[![License](https://img.shields.io/npm/l/@homebridge-nhc2/homebridge-nhc2.svg)](https://github.com/homebridge-nhc2/homebridge-nhc2/blob/master/LICENSE)
-[![Downloads](https://img.shields.io/npm/dt/@homebridge-nhc2/homebridge-nhc2.svg)](https://www.npmjs.org/package/@homebridge-nhc2/homebridge-nhc2)
+[![Version](http://img.shields.io/npm/v/@openhomekit/homebridge-nhc2.png)](https://www.npmjs.org/package/@openhomekit/homebridge-nhc2)
+[![License](https://img.shields.io/npm/l/@openhomekit/homebridge-nhc2.svg)](https://github.com/homebridge-nhc2/homebridge-nhc2/blob/master/LICENSE)
+[![Downloads](https://img.shields.io/npm/dt/@openhomekit/homebridge-nhc2.svg)](https://www.npmjs.org/package/@openhomekit/homebridge-nhc2)
 [![Build Status](https://travis-ci.com/homebridge-nhc2/homebridge-nhc2.svg?branch=master)](https://travis-ci.com/homebridge-nhc2/homebridge-nhc2)
 [![Dependencies](https://david-dm.org/homebridge-nhc2/homebridge-nhc2.svg)](https://david-dm.org/homebridge-nhc2/homebridge-nhc2)
 [![Gitter chat](https://badges.gitter.im/homebridge-nhc2/community.png)](https://gitter.im/homebridge-nhc2/community)
@@ -65,7 +65,7 @@ intervention of professionals of which costs cannot be returned by the project t
 
 In order to use the plugin you must first download and install it globally.
 
-    npm install -g @homebridge-nhc2/homebridge-nhc2
+    npm install -g @openhomekit/homebridge-nhc2
 
 You may also install directly from the GitHub 
 [source](https://github.com/homebridge-nhc2/homebridge-nhc2). Either download and unzip 
