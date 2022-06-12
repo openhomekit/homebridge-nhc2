@@ -123,6 +123,24 @@ Besides the required `host` & `password` and other connection-related configurai
 
 This allows for not exposing certain accessories to Homebrigde (and therefore also the Home app). This feature can be useful when sharing access to the Home app with others. 
 
+#### Inverting Operation of Windowblind
+
+Interpreting the concept of open or closed is subjective to say the least. In case the interpretation of NHC and HomeKit doesn't match your personal preference (e.g. I like the concept of the slider to match the height of the rolled out blid) you might want to invert the operation of blinds. By adding the accessory's UUID to the configurable list of `invertedBlinds`, you can have it translated on the go:
+
+```json
+  "platforms": [
+    {
+      "platform" : "NHC2",
+      "name" : "NHC2",
+      "host": "<IP_ADDRESS_OF_YOUR_CONNECTED_CONTROLLER>",
+      "password": "<PASSWORD_PROVIDED_BY_MYNIKOHOMECONTROLL>",
+      "invertedBlinds": [
+          "fa33d687-9225-4f9e-b55e-013abb69b42e"
+      ]
+    }
+  ]
+```
+
 ## Plugin Development
 
 When working on this plugin, you'll want Homebridge to load it from your development directory instead of publishing it to `npm` each time.
