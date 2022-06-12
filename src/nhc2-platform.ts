@@ -38,6 +38,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
 
   private readonly accessories: PlatformAccessory[] = [];
   private readonly suppressedAccessories: string[] = [];
+  private readonly invertedBlinds: string[] = [];
   private readonly nhc2: NHC2;
 
   private readonly log: NHC2Logger;
@@ -54,6 +55,13 @@ class NHC2Platform implements DynamicPlatformPlugin {
       this.suppressedAccessories.forEach(acc => {
         this.log.info("  - " + acc);
       });
+    }
+    this.invertedBlinds = config.invertedBlinds || [];
+    if (this.invertedBlinds) {
+      this.log.debug("Inverting blinds: ");
+      this.invertedBlinds.forEach(acc => {
+        this.log.debug("  - " + acc);
+      });      
     }
     this.nhc2 = new NHC2("mqtts://" + this.config.host, {
        port: this.config.port || 8884,
@@ -259,7 +267,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
         (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
           this.nhc2.sendPositionChangeCommand(
             newAccessory.UUID,
-            value as number,
+            this.blindsPosition(newAccessory.UUID, value as number),
           );
           callback();
         },
@@ -292,7 +300,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
           const moving = device.Properties?.find(p => p.Moving)?.Moving === "True";
           service
             .getCharacteristic(this.Characteristic.CurrentPosition)
-            .updateValue(parseInt(property.Position, 10));
+            .updateValue(this.blindsPosition(device.Uuid, parseInt(property.Position, 10)));
 
           service
             .getCharacteristic(this.Characteristic.PositionState)
@@ -302,11 +310,18 @@ class NHC2Platform implements DynamicPlatformPlugin {
           if (!moving) {
             service
               .getCharacteristic(this.Characteristic.TargetPosition)
-              .updateValue(parseInt(property.Position, 10));
+              .updateValue(this.blindsPosition(device.Uuid, parseInt(property.Position, 10)));
           }
 
         }
       });
     }
+  }
+  
+  private blindsPosition(uuid: string, position: number) {
+    if (this.invertedBlinds.includes(uuid)) {
+      return 100 - position;
+    }
+    return position;
   }
 }
