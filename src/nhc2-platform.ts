@@ -1,5 +1,6 @@
 import { Device } from "@openhomekit/nhc2-hobby-api/lib/event/device";
 import { Event } from "@openhomekit/nhc2-hobby-api/lib/event/event";
+import { FanSpeed } from "@openhomekit/nhc2-hobby-api/lib/event/FanSpeed";
 import { NHC2 } from "@openhomekit/nhc2-hobby-api/lib/NHC2";
 import {
   API,
@@ -56,11 +57,11 @@ class NHC2Platform implements DynamicPlatformPlugin {
       });
     }
     this.nhc2 = new NHC2("mqtts://" + this.config.host, {
-       port: this.config.port || 8884,
-       clientId: this.config.clientId || "NHC2-homebridge",
-       username: this.config.username || "hobby",
-       password: this.config.password,
-       rejectUnauthorized: false,
+      port: this.config.port || 8884,
+      clientId: this.config.clientId || "NHC2-homebridge",
+      username: this.config.username || "hobby",
+      password: this.config.password,
+      rejectUnauthorized: false,
     });
 
     this.log.info("NHC2Platform finished initializing!");
@@ -70,7 +71,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
 
       await this.nhc2.subscribe();
       const nhc2Accessories = await this.nhc2.getAccessories();
-      this.log.verbose("got " + nhc2Accessories.length + " accessories");
+      this.log.info("got " + nhc2Accessories.length + " accessories");
       this.addAccessories(nhc2Accessories);
 
       this.nhc2.getEvents().subscribe(event => {
@@ -121,23 +122,62 @@ class NHC2Platform implements DynamicPlatformPlugin {
       },
       generic: {
         service: this.Service.Switch,
-        handlers: [this.addTriggerCharacteristic],
+        handlers: [this.addTriggerCharacteristic]
       },
-      sunblind : {
-        service : this.Service.WindowCovering,
-        handlers : [this.addPositionChangeCharacteristic]
+      'switched-generic': {
+        service: this.Service.Switch,
+        handlers: [this.addStatusChangeCharacteristic],
       },
-      venetianblind : {
-        service : this.Service.WindowCovering,
-        handlers : [this.addPositionChangeCharacteristic]
+      'switched-fan': {
+        service: this.Service.Fan,
+        handlers: [this.addStatusChangeCharacteristic],
       },
-      rolldownshutter : {
-        service : this.Service.WindowCovering,
-        handlers : [this.addPositionChangeCharacteristic]
+      sunblind: {
+        service: this.Service.WindowCovering,
+        handlers: [this.addPositionChangeCharacteristic]
       },
-      gate : {
-        service : this.Service.WindowCovering,
-        handlers : [this.addPositionChangeCharacteristic]
+      venetianblind: {
+        service: this.Service.WindowCovering,
+        handlers: [this.addPositionChangeCharacteristic]
+      },
+      rolldownshutter: {
+        service: this.Service.WindowCovering,
+        handlers: [this.addPositionChangeCharacteristic]
+      },
+      gate: {
+        service: this.Service.WindowCovering,
+        handlers: [this.addPositionChangeCharacteristic]
+      },
+      alloff: {
+        service: this.Service.Switch,
+        handlers: [this.addTriggerCharacteristic]
+      },
+      simulation: {
+        service: this.Service.Switch,
+        handlers: [this.addTriggerCharacteristic]
+      },
+      alarms: {
+        service: this.Service.Switch,
+        handlers: [this.addTriggerCharacteristic]
+      },
+      comfort: {
+        service: this.Service.Switch,
+        handlers: [this.addStatusChangeCharacteristic]
+      },
+      peakmode: {
+        service: this.Service.Switch,
+        handlers: [this.addTriggerCharacteristic]
+      },
+      solarmode: {
+        service: this.Service.Switch,
+        handlers: [this.addTriggerCharacteristic]
+      },
+      fan: {
+        service: this.Service.Fan,
+        handlers: [
+          this.addOnFanCharacteristic,
+          this.addOffFanCharacteristic
+        ]
       }
     };
 
@@ -145,7 +185,9 @@ class NHC2Platform implements DynamicPlatformPlugin {
       const config = mapping[model];
       const accs = accessories.filter(
         acc =>
-          !this.suppressedAccessories.includes(acc.Uuid) && acc.Model === model,
+          !this.suppressedAccessories.includes(acc.Uuid)
+          && acc.Model === model
+          && acc.Type === 'action',
       );
       accs.forEach(acc => {
         const newAccessory = new Accessory(acc.Name as string, acc.Uuid);
@@ -172,10 +214,10 @@ class NHC2Platform implements DynamicPlatformPlugin {
     ]);
     this.log.debug(
       "registered accessory: " +
-        accessory.displayName +
-        " (" +
-        accessory.UUID +
-        ")",
+      accessory.displayName +
+      " (" +
+      accessory.UUID +
+      ")",
     );
   }
 
@@ -186,10 +228,10 @@ class NHC2Platform implements DynamicPlatformPlugin {
     this.accessories.splice(this.accessories.indexOf(accessory), 1);
     this.log.debug(
       "unregistered accessory: " +
-        accessory.displayName +
-        " (" +
-        accessory.UUID +
-        ")",
+      accessory.displayName +
+      " (" +
+      accessory.UUID +
+      ")",
     );
   }
 
@@ -243,28 +285,88 @@ class NHC2Platform implements DynamicPlatformPlugin {
       .getCharacteristic(this.Characteristic.On)
       .on(
         CharacteristicEventTypes.SET,
-        (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+        (_value: CharacteristicValue, callback: CharacteristicSetCallback) => {
           this.nhc2.sendTriggerBasicStateCommand(newAccessory.UUID);
           callback();
         },
       );
   };
 
-  private addPositionChangeCharacteristic =
-  ( newService: Service, newAccessory: PlatformAccessory ) => {
+  private addOnFanCharacteristic = (
+    newService: Service,
+    newAccessory: PlatformAccessory,
+  ) => {
     newService
-      .getCharacteristic(this.Characteristic.TargetPosition)
+      .getCharacteristic(this.Characteristic.RotationSpeed)
       .on(
         CharacteristicEventTypes.SET,
         (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-          this.nhc2.sendPositionChangeCommand(
+          switch (true) {
+            case value === 100:
+              this.nhc2.sendFanSpeedCommand(
+                newAccessory.UUID,
+                FanSpeed.Boost,
+              );
+              break;
+            case value >= 50:
+              this.nhc2.sendFanSpeedCommand(
+                newAccessory.UUID,
+                FanSpeed.High,
+              );
+              break;
+            case value === 0:
+              this.nhc2.sendFanSpeedCommand(
+                newAccessory.UUID,
+                FanSpeed.Low,
+              );
+              break;
+            default:
+              this.nhc2.sendFanSpeedCommand(
+                newAccessory.UUID,
+                FanSpeed.Medium,
+              );
+          }
+          callback();
+        }
+      )
+  };
+
+  private addOffFanCharacteristic = (
+    newService: Service,
+    newAccessory: PlatformAccessory,
+  ) => {
+    newService
+      .getCharacteristic(this.Characteristic.On)
+      .on(
+        CharacteristicEventTypes.SET,
+        (_value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+          this.nhc2.sendFanSpeedCommand(
             newAccessory.UUID,
-            value as number,
+            FanSpeed.Low,
           );
           callback();
-        },
-      );
+        }
+      )
   };
+
+  private addPositionChangeCharacteristic =
+    (
+      newService: Service,
+      newAccessory: PlatformAccessory
+    ) => {
+      newService
+        .getCharacteristic(this.Characteristic.TargetPosition)
+        .on(
+          CharacteristicEventTypes.SET,
+          (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+            this.nhc2.sendPositionChangeCommand(
+              newAccessory.UUID,
+              value as number,
+            );
+            callback();
+          },
+        );
+    };
 
   private processDeviceProperties(device: Device, service: Service) {
 
@@ -277,10 +379,10 @@ class NHC2Platform implements DynamicPlatformPlugin {
 
     if (!!device.Properties) {
       device.Properties.forEach(property => {
-        if (property.Status === "On" || property.BasicState === "On") {
+        if (property.BasicState === "On") {
           service.getCharacteristic(this.Characteristic.On).updateValue(true);
         }
-        if (property.Status === "Off" || property.BasicState === "Off") {
+        if (property.BasicState === "Off") {
           service.getCharacteristic(this.Characteristic.On).updateValue(false);
         }
         if (!!property.Brightness) {
@@ -288,23 +390,41 @@ class NHC2Platform implements DynamicPlatformPlugin {
             .getCharacteristic(this.Characteristic.Brightness)
             .updateValue(property.Brightness);
         }
-        if (!! property.Position) {
+        if (!!property.FanSpeed) {
+          switch (property.FanSpeed) {
+            case FanSpeed.Boost:
+              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(100)
+              service.getCharacteristic(this.Characteristic.On).updateValue(true)
+              break
+            case FanSpeed.High:
+              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(66)
+              service.getCharacteristic(this.Characteristic.On).updateValue(true)
+              break
+            case FanSpeed.Medium:
+              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(33)
+              service.getCharacteristic(this.Characteristic.On).updateValue(true)
+              break
+            case FanSpeed.Low:
+              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(0)
+              service.getCharacteristic(this.Characteristic.On).updateValue(false)
+              break
+          }
+        }
+        if (!!property.Position) {
           const moving = device.Properties?.find(p => p.Moving)?.Moving === "True";
           service
             .getCharacteristic(this.Characteristic.CurrentPosition)
             .updateValue(parseInt(property.Position, 10));
-
           service
             .getCharacteristic(this.Characteristic.PositionState)
             .updateValue(moving ? 1 : 2);
-            /* TODO: find a way to determing INCREASING=1 or DECREASING=0 */
+          /* TODO: find a way to determine INCREASING=1 or DECREASING=0 */
 
           if (!moving) {
             service
               .getCharacteristic(this.Characteristic.TargetPosition)
               .updateValue(parseInt(property.Position, 10));
           }
-
         }
       });
     }

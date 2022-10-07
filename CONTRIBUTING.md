@@ -14,5 +14,5 @@ Requests` will be considered with the following criteria:
 Useful bug reports include the following:
 
 * Version of the library used (ideally the latest published version)
-* Clear set of steps used to reproduct the issue
+* Clear set of steps used to reproduce the issue
 * Code examples if appropriate

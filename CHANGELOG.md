@@ -8,3 +8,22 @@
   * change position (e.g. of sunblinds)
   * toggle light status
   * set light brightness level
+
+## v3.0.1
+
+* Filtered out devices that are not controlable (only actions and routines)
+
+* Added actions
+  * Basic fan control (switched-fan)
+  * Ventilation control (fan)
+    * 0 = Low 
+    * 1-49 = Medium 
+    * 50-99 = High 
+    * 100 = Boost
+* Added routines
+  * All-Off
+  * Presence Simulation
+  * Alarms
+  * Scenes (comfort)
+  * Peak Mode
+  * Solar Mode
