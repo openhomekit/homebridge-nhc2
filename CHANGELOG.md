@@ -9,7 +9,7 @@
   * toggle light status
   * set light brightness level
 
-## v3.0.1
+## v3.1.0
 
 * Filtered out devices that are not controlable (only actions and routines)
 
