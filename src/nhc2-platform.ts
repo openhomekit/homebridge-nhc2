@@ -285,7 +285,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
       .getCharacteristic(this.Characteristic.On)
       .on(
         CharacteristicEventTypes.SET,
-        (_value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+        (_: CharacteristicValue, callback: CharacteristicSetCallback) => {
           this.nhc2.sendTriggerBasicStateCommand(newAccessory.UUID);
           callback();
         },
@@ -339,7 +339,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
       .getCharacteristic(this.Characteristic.On)
       .on(
         CharacteristicEventTypes.SET,
-        (_value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+        (_: CharacteristicValue, callback: CharacteristicSetCallback) => {
           this.nhc2.sendFanSpeedCommand(
             newAccessory.UUID,
             FanSpeed.Low,
