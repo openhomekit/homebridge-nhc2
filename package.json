@@ -1,6 +1,6 @@
 {
 	"name": "@openhomekit/homebridge-nhc2",
-	"version": "3.0.0",
+	"version": "3.1.0",
 	"description": "Niko Home Control 2 support for Homebridge",
 	"license": "MIT",
 	"keywords": [
