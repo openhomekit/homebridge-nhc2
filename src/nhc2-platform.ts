@@ -107,18 +107,18 @@ class NHC2Platform implements DynamicPlatformPlugin {
     const mapping: { [index: string]: any } = {
       light: {
         service: this.Service.Lightbulb,
-        handlers: [this.addStatusChangeCharacteristic],
+        handlers: [this.addStatusChangeCharacteristic]
       },
       dimmer: {
         service: this.Service.Lightbulb,
         handlers: [
           this.addStatusChangeCharacteristic,
-          this.addBrightnessChangeCharacteristic,
+          this.addBrightnessChangeCharacteristic
         ],
       },
       socket: {
         service: this.Service.Outlet,
-        handlers: [this.addStatusChangeCharacteristic],
+        handlers: [this.addStatusChangeCharacteristic]
       },
       generic: {
         service: this.Service.Switch,
@@ -126,11 +126,11 @@ class NHC2Platform implements DynamicPlatformPlugin {
       },
       'switched-generic': {
         service: this.Service.Switch,
-        handlers: [this.addStatusChangeCharacteristic],
+        handlers: [this.addStatusChangeCharacteristic]
       },
       'switched-fan': {
         service: this.Service.Fan,
-        handlers: [this.addStatusChangeCharacteristic],
+        handlers: [this.addStatusChangeCharacteristic]
       },
       sunblind: {
         service: this.Service.WindowCovering,
