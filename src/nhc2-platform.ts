@@ -388,7 +388,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
         .on(
           CharacteristicEventTypes.SET,
           (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-            if (value as number == newService.getCharacteristic(this.Characteristic.CurrentTemperature).value) {
+            if (value as number === newService.getCharacteristic(this.Characteristic.CurrentTemperature).value) {
               this.nhc2.sendTempOverruleCommand(newAccessory.UUID, false, value as number)
             } else {
               this.nhc2.sendTempOverruleCommand(newAccessory.UUID, true, value as number, 1439)
