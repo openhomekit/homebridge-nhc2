@@ -27,3 +27,7 @@
   * Scenes (comfort)
   * Peak Mode
   * Solar Mode
+
+## v3.2.0
+
+* Added support for thermostats

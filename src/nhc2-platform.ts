@@ -1,3 +1,4 @@
+import { Demand } from "@openhomekit/nhc2-hobby-api/lib/event/Demand";
 import { Device } from "@openhomekit/nhc2-hobby-api/lib/event/device";
 import { Event } from "@openhomekit/nhc2-hobby-api/lib/event/event";
 import { FanSpeed } from "@openhomekit/nhc2-hobby-api/lib/event/FanSpeed";
@@ -85,6 +86,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
   }
 
   public processEvent = (event: Event) => {
+    this.log.debug('Event: ', JSON.stringify(event))
     if (!!event.Params) {
       event.Params.flatMap(param =>
         param.Devices.forEach((device: Device) => {
@@ -178,6 +180,12 @@ class NHC2Platform implements DynamicPlatformPlugin {
           this.addOnFanCharacteristic,
           this.addOffFanCharacteristic
         ]
+      },
+      thermostat: {
+        service: this.Service.Thermostat,
+        handlers: [
+          this.addTargetTemperatureCharacteristic,
+        ]
       }
     };
 
@@ -187,7 +195,9 @@ class NHC2Platform implements DynamicPlatformPlugin {
         acc =>
           !this.suppressedAccessories.includes(acc.Uuid)
           && acc.Model === model
-          && acc.Type === 'action',
+          && (
+            acc.Type === 'action' ||
+            acc.Type === 'thermostat')
       );
       accs.forEach(acc => {
         const newAccessory = new Accessory(acc.Name as string, acc.Uuid);
@@ -368,6 +378,26 @@ class NHC2Platform implements DynamicPlatformPlugin {
         );
     };
 
+  private addTargetTemperatureCharacteristic = 
+    (
+      newService: Service,
+      newAccessory: PlatformAccessory
+    ) => {
+      newService
+        .getCharacteristic(this.Characteristic.TargetTemperature)
+        .on(
+          CharacteristicEventTypes.SET,
+          (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+            if (value as number == newService.getCharacteristic(this.Characteristic.CurrentTemperature).value) {
+              this.nhc2.sendTempOverruleCommand(newAccessory.UUID, false, value as number)
+            } else {
+              this.nhc2.sendTempOverruleCommand(newAccessory.UUID, true, value as number, 1439)
+            }
+            callback();
+          },
+        );
+    };
+
   private processDeviceProperties(device: Device, service: Service) {
 
     // Super hacky, but for some reason every device has two services, one we added and another "AccessoryInformation".
@@ -424,6 +454,36 @@ class NHC2Platform implements DynamicPlatformPlugin {
             service
               .getCharacteristic(this.Characteristic.TargetPosition)
               .updateValue(parseInt(property.Position, 10));
+          }
+        }
+        if (!!property.AmbientTemperature) {
+          service.getCharacteristic(this.Characteristic.CurrentTemperature)
+            .updateValue(parseFloat(property.AmbientTemperature));
+          service.getCharacteristic(this.Characteristic.TemperatureDisplayUnits)
+            .updateValue(0);
+        }
+        if (!!property.SetpointTemperature) {
+          service.getCharacteristic(this.Characteristic.TargetTemperature)
+            .updateValue(parseFloat(property.SetpointTemperature));
+        }
+        if (!!property.SetpointTemperature) {
+          service.getCharacteristic(this.Characteristic.TargetTemperature)
+            .updateValue(parseFloat(property.SetpointTemperature));
+        }
+        if (!!property.Demand) {
+          switch (property.Demand) {
+            case Demand.None:
+              service.getCharacteristic(this.Characteristic.CurrentHeatingCoolingState).updateValue(0);
+              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(0);
+              break;
+            case Demand.Heating:
+              service.getCharacteristic(this.Characteristic.CurrentHeatingCoolingState).updateValue(1);
+              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(1);
+              break;
+            case Demand.Cooling:
+              service.getCharacteristic(this.Characteristic.CurrentHeatingCoolingState).updateValue(2);
+              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(2);
+              break;
           }
         }
       });
