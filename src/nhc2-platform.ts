@@ -379,10 +379,10 @@ class NHC2Platform implements DynamicPlatformPlugin {
 
     if (!!device.Properties) {
       device.Properties.forEach(property => {
-        if (property.BasicState === "On") {
+        if (property.Status === "On" || property.BasicState === "On") {
           service.getCharacteristic(this.Characteristic.On).updateValue(true);
         }
-        if (property.BasicState === "Off") {
+        if (property.Status === "Off" || property.BasicState === "Off") {
           service.getCharacteristic(this.Characteristic.On).updateValue(false);
         }
         if (!!property.Brightness) {
