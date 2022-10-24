@@ -2,6 +2,7 @@ import { Demand } from "@openhomekit/nhc2-hobby-api/lib/event/Demand";
 import { Device } from "@openhomekit/nhc2-hobby-api/lib/event/device";
 import { Event } from "@openhomekit/nhc2-hobby-api/lib/event/event";
 import { FanSpeed } from "@openhomekit/nhc2-hobby-api/lib/event/FanSpeed";
+import { Program } from "@openhomekit/nhc2-hobby-api/lib/event/Program";
 import { NHC2 } from "@openhomekit/nhc2-hobby-api/lib/NHC2";
 import {
   API,
@@ -185,6 +186,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
         service: this.Service.Thermostat,
         handlers: [
           this.addTargetTemperatureCharacteristic,
+          this.addProgramCharacteristic
         ]
       }
     };
@@ -378,7 +380,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
         );
     };
 
-  private addTargetTemperatureCharacteristic = 
+  private addTargetTemperatureCharacteristic =
     (
       newService: Service,
       newAccessory: PlatformAccessory
@@ -391,11 +393,51 @@ class NHC2Platform implements DynamicPlatformPlugin {
             if (value as number === newService.getCharacteristic(this.Characteristic.CurrentTemperature).value) {
               this.nhc2.sendTempOverruleCommand(newAccessory.UUID, false, value as number)
             } else {
-              this.nhc2.sendTempOverruleCommand(newAccessory.UUID, true, value as number, 1439)
+              this.nhc2.sendTempOverruleCommand(newAccessory.UUID, true, value as number, 60)
             }
             callback();
           },
         );
+    };
+
+  private addProgramCharacteristic =
+    (
+      newService: Service,
+      newAccessory: PlatformAccessory
+    ) => {
+      newService
+        .getCharacteristic(this.Characteristic.TargetHeatingCoolingState)
+        .on(
+          CharacteristicEventTypes.SET,
+          (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+            switch (value) {
+              case 0:
+                this.nhc2.sendProgramCommand(
+                  newAccessory.UUID,
+                  Program.Off,
+                );
+                break;
+              case 1:
+                this.nhc2.sendProgramCommand(
+                  newAccessory.UUID,
+                  Program.Day,
+                );
+                break;
+              case 2:
+                this.nhc2.sendProgramCommand(
+                  newAccessory.UUID,
+                  Program.Cool,
+                );
+                break;
+              default:
+                this.nhc2.sendProgramCommand(
+                  newAccessory.UUID,
+                  Program.Prog1,
+                );
+            }
+            callback();
+          }
+        )
     };
 
   private processDeviceProperties(device: Device, service: Service) {
@@ -423,21 +465,21 @@ class NHC2Platform implements DynamicPlatformPlugin {
         if (!!property.FanSpeed) {
           switch (property.FanSpeed) {
             case FanSpeed.Boost:
-              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(100)
-              service.getCharacteristic(this.Characteristic.On).updateValue(true)
-              break
+              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(100);
+              service.getCharacteristic(this.Characteristic.On).updateValue(true);
+              break;
             case FanSpeed.High:
-              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(66)
-              service.getCharacteristic(this.Characteristic.On).updateValue(true)
-              break
+              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(66);
+              service.getCharacteristic(this.Characteristic.On).updateValue(true);
+              break;
             case FanSpeed.Medium:
-              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(33)
-              service.getCharacteristic(this.Characteristic.On).updateValue(true)
-              break
+              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(33);
+              service.getCharacteristic(this.Characteristic.On).updateValue(true);
+              break;
             case FanSpeed.Low:
-              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(0)
-              service.getCharacteristic(this.Characteristic.On).updateValue(false)
-              break
+              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(0);
+              service.getCharacteristic(this.Characteristic.On).updateValue(false);
+              break;
           }
         }
         if (!!property.Position) {
@@ -463,18 +505,37 @@ class NHC2Platform implements DynamicPlatformPlugin {
             .updateValue(0);
         }
         if (!!property.SetpointTemperature) {
-          service.getCharacteristic(this.Characteristic.TargetTemperature)
-            .updateValue(parseFloat(property.SetpointTemperature));
+          switch (true) {
+            // Niko has a min temp of 7 which homebridge cannot handle
+            case parseFloat(property.SetpointTemperature) < 10:
+              service.getCharacteristic(this.Characteristic.TargetTemperature).updateValue(10);
+              break;
+            default:
+              service.getCharacteristic(this.Characteristic.TargetTemperature)
+                .updateValue(parseFloat(property.SetpointTemperature));
+              break;
+          }
         }
-        if (!!property.SetpointTemperature) {
-          service.getCharacteristic(this.Characteristic.TargetTemperature)
-            .updateValue(parseFloat(property.SetpointTemperature));
+        if (!!property.Program) {
+          switch (property.Program) {
+            case Program.Off:
+              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(0);
+              break;
+            case Program.Day:
+              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(1);
+              break;
+            case Program.Cool:
+              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(2);
+              break;
+            default:
+              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(3);
+              break;
+          }
         }
         if (!!property.Demand) {
           switch (property.Demand) {
             case Demand.None:
               service.getCharacteristic(this.Characteristic.CurrentHeatingCoolingState).updateValue(0);
-              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(0);
               break;
             case Demand.Heating:
               service.getCharacteristic(this.Characteristic.CurrentHeatingCoolingState).updateValue(1);

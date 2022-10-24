@@ -31,3 +31,16 @@
 ## v3.2.0
 
 * Added support for thermostats
+
+## v3.3.0
+
+* Added support for thermostat programs
+  * Homebridge --> Niko
+    * Off       -->   Off
+    * Heating   -->   Day
+    * Cooling   -->   Cool
+    * Auto      -->   Prog 1
+  * Any other programs selected in Niko will display as Auto
+  * Min temp for homebridge is 10 where as Niko supports as low as 7. 
+    * Any temp set under 10 degrees in Niko will be displayed as 10. 
+  * Changed the default override time from 24h to 60min
