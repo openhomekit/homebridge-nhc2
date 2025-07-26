@@ -87,7 +87,7 @@ class NHC2Platform implements DynamicPlatformPlugin {
   }
 
   public processEvent = (event: Event) => {
-    this.log.debug('Event: ', JSON.stringify(event))
+    this.log.debug("Event: ", JSON.stringify(event));
     if (!!event.Params) {
       event.Params.flatMap(param =>
         param.Devices.forEach((device: Device) => {
@@ -110,96 +110,91 @@ class NHC2Platform implements DynamicPlatformPlugin {
     const mapping: { [index: string]: any } = {
       light: {
         service: this.Service.Lightbulb,
-        handlers: [this.addStatusChangeCharacteristic]
+        handlers: [this.addStatusChangeCharacteristic],
       },
       dimmer: {
         service: this.Service.Lightbulb,
         handlers: [
           this.addStatusChangeCharacteristic,
-          this.addBrightnessChangeCharacteristic
+          this.addBrightnessChangeCharacteristic,
         ],
       },
       socket: {
         service: this.Service.Outlet,
-        handlers: [this.addStatusChangeCharacteristic]
+        handlers: [this.addStatusChangeCharacteristic],
       },
       generic: {
         service: this.Service.Switch,
-        handlers: [this.addTriggerCharacteristic]
+        handlers: [this.addTriggerCharacteristic],
       },
-      'switched-generic': {
+      "switched-generic": {
         service: this.Service.Switch,
-        handlers: [this.addStatusChangeCharacteristic]
+        handlers: [this.addStatusChangeCharacteristic],
       },
-      'switched-fan': {
+      "switched-fan": {
         service: this.Service.Fan,
-        handlers: [this.addStatusChangeCharacteristic]
+        handlers: [this.addStatusChangeCharacteristic],
       },
       sunblind: {
         service: this.Service.WindowCovering,
-        handlers: [this.addPositionChangeCharacteristic]
+        handlers: [this.addPositionChangeCharacteristic],
       },
       venetianblind: {
         service: this.Service.WindowCovering,
-        handlers: [this.addPositionChangeCharacteristic]
+        handlers: [this.addPositionChangeCharacteristic],
       },
       rolldownshutter: {
         service: this.Service.WindowCovering,
-        handlers: [this.addPositionChangeCharacteristic]
+        handlers: [this.addPositionChangeCharacteristic],
       },
       gate: {
         service: this.Service.WindowCovering,
-        handlers: [this.addPositionChangeCharacteristic]
+        handlers: [this.addPositionChangeCharacteristic],
       },
       alloff: {
         service: this.Service.Switch,
-        handlers: [this.addTriggerCharacteristic]
+        handlers: [this.addTriggerCharacteristic],
       },
       simulation: {
         service: this.Service.Switch,
-        handlers: [this.addTriggerCharacteristic]
+        handlers: [this.addTriggerCharacteristic],
       },
       alarms: {
         service: this.Service.Switch,
-        handlers: [this.addTriggerCharacteristic]
+        handlers: [this.addTriggerCharacteristic],
       },
       comfort: {
         service: this.Service.Switch,
-        handlers: [this.addStatusChangeCharacteristic]
+        handlers: [this.addStatusChangeCharacteristic],
       },
       peakmode: {
         service: this.Service.Switch,
-        handlers: [this.addTriggerCharacteristic]
+        handlers: [this.addTriggerCharacteristic],
       },
       solarmode: {
         service: this.Service.Switch,
-        handlers: [this.addTriggerCharacteristic]
+        handlers: [this.addTriggerCharacteristic],
       },
       fan: {
         service: this.Service.Fan,
-        handlers: [
-          this.addOnFanCharacteristic,
-          this.addOffFanCharacteristic
-        ]
+        handlers: [this.addOnFanCharacteristic, this.addOffFanCharacteristic],
       },
       thermostat: {
         service: this.Service.Thermostat,
         handlers: [
           this.addTargetTemperatureCharacteristic,
-          this.addProgramCharacteristic
-        ]
-      }
+          this.addProgramCharacteristic,
+        ],
+      },
     };
 
     Object.keys(mapping).forEach(model => {
       const config = mapping[model];
       const accs = accessories.filter(
         acc =>
-          !this.suppressedAccessories.includes(acc.Uuid)
-          && acc.Model === model
-          && (
-            acc.Type === 'action' ||
-            acc.Type === 'thermostat')
+          !this.suppressedAccessories.includes(acc.Uuid) &&
+          acc.Model === model &&
+          (acc.Type === "action" || acc.Type === "thermostat"),
       );
       accs.forEach(acc => {
         const newAccessory = new Accessory(acc.Name as string, acc.Uuid);
@@ -226,10 +221,10 @@ class NHC2Platform implements DynamicPlatformPlugin {
     ]);
     this.log.debug(
       "registered accessory: " +
-      accessory.displayName +
-      " (" +
-      accessory.UUID +
-      ")",
+        accessory.displayName +
+        " (" +
+        accessory.UUID +
+        ")",
     );
   }
 
@@ -240,10 +235,10 @@ class NHC2Platform implements DynamicPlatformPlugin {
     this.accessories.splice(this.accessories.indexOf(accessory), 1);
     this.log.debug(
       "unregistered accessory: " +
-      accessory.displayName +
-      " (" +
-      accessory.UUID +
-      ")",
+        accessory.displayName +
+        " (" +
+        accessory.UUID +
+        ")",
     );
   }
 
@@ -316,32 +311,20 @@ class NHC2Platform implements DynamicPlatformPlugin {
           const typedValue = value as number;
           switch (true) {
             case typedValue === 100:
-              this.nhc2.sendFanSpeedCommand(
-                newAccessory.UUID,
-                FanSpeed.Boost,
-              );
+              this.nhc2.sendFanSpeedCommand(newAccessory.UUID, FanSpeed.Boost);
               break;
             case typedValue >= 50:
-              this.nhc2.sendFanSpeedCommand(
-                newAccessory.UUID,
-                FanSpeed.High,
-              );
+              this.nhc2.sendFanSpeedCommand(newAccessory.UUID, FanSpeed.High);
               break;
             case typedValue === 0:
-              this.nhc2.sendFanSpeedCommand(
-                newAccessory.UUID,
-                FanSpeed.Low,
-              );
+              this.nhc2.sendFanSpeedCommand(newAccessory.UUID, FanSpeed.Low);
               break;
             default:
-              this.nhc2.sendFanSpeedCommand(
-                newAccessory.UUID,
-                FanSpeed.Medium,
-              );
+              this.nhc2.sendFanSpeedCommand(newAccessory.UUID, FanSpeed.Medium);
           }
           callback();
-        }
-      )
+        },
+      );
   };
 
   private addOffFanCharacteristic = (
@@ -353,102 +336,96 @@ class NHC2Platform implements DynamicPlatformPlugin {
       .on(
         CharacteristicEventTypes.SET,
         (_: CharacteristicValue, callback: CharacteristicSetCallback) => {
-          this.nhc2.sendFanSpeedCommand(
-            newAccessory.UUID,
-            FanSpeed.Low,
-          );
+          this.nhc2.sendFanSpeedCommand(newAccessory.UUID, FanSpeed.Low);
           callback();
-        }
-      )
+        },
+      );
   };
 
-  private addPositionChangeCharacteristic =
-    (
-      newService: Service,
-      newAccessory: PlatformAccessory
-    ) => {
-      newService
-        .getCharacteristic(this.Characteristic.TargetPosition)
-        .on(
-          CharacteristicEventTypes.SET,
-          (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-            this.nhc2.sendPositionChangeCommand(
+  private addPositionChangeCharacteristic = (
+    newService: Service,
+    newAccessory: PlatformAccessory,
+  ) => {
+    newService
+      .getCharacteristic(this.Characteristic.TargetPosition)
+      .on(
+        CharacteristicEventTypes.SET,
+        (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+          this.nhc2.sendPositionChangeCommand(
+            newAccessory.UUID,
+            value as number,
+          );
+          callback();
+        },
+      );
+  };
+
+  private addTargetTemperatureCharacteristic = (
+    newService: Service,
+    newAccessory: PlatformAccessory,
+  ) => {
+    newService
+      .getCharacteristic(this.Characteristic.TargetTemperature)
+      .on(
+        CharacteristicEventTypes.SET,
+        (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+          if (
+            (value as number) ===
+            newService.getCharacteristic(this.Characteristic.CurrentTemperature)
+              .value
+          ) {
+            this.nhc2.sendTempOverruleCommand(
               newAccessory.UUID,
+              false,
               value as number,
             );
-            callback();
-          },
-        );
-    };
-
-  private addTargetTemperatureCharacteristic =
-    (
-      newService: Service,
-      newAccessory: PlatformAccessory
-    ) => {
-      newService
-        .getCharacteristic(this.Characteristic.TargetTemperature)
-        .on(
-          CharacteristicEventTypes.SET,
-          (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-            if (value as number === newService.getCharacteristic(this.Characteristic.CurrentTemperature).value) {
-              this.nhc2.sendTempOverruleCommand(newAccessory.UUID, false, value as number)
-            } else {
-              this.nhc2.sendTempOverruleCommand(newAccessory.UUID, true, value as number, 60)
-            }
-            callback();
-          },
-        );
-    };
-
-  private addProgramCharacteristic =
-    (
-      newService: Service,
-      newAccessory: PlatformAccessory
-    ) => {
-      newService
-        .getCharacteristic(this.Characteristic.TargetHeatingCoolingState)
-        .on(
-          CharacteristicEventTypes.SET,
-          (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-            switch (value) {
-              case 0:
-                this.nhc2.sendProgramCommand(
-                  newAccessory.UUID,
-                  Program.Off,
-                );
-                break;
-              case 1:
-                this.nhc2.sendProgramCommand(
-                  newAccessory.UUID,
-                  Program.Day,
-                );
-                break;
-              case 2:
-                this.nhc2.sendProgramCommand(
-                  newAccessory.UUID,
-                  Program.Cool,
-                );
-                break;
-              default:
-                this.nhc2.sendProgramCommand(
-                  newAccessory.UUID,
-                  Program.Prog1,
-                );
-            }
-            callback();
+          } else {
+            this.nhc2.sendTempOverruleCommand(
+              newAccessory.UUID,
+              true,
+              value as number,
+              60,
+            );
           }
-        )
-    };
+          callback();
+        },
+      );
+  };
+
+  private addProgramCharacteristic = (
+    newService: Service,
+    newAccessory: PlatformAccessory,
+  ) => {
+    newService
+      .getCharacteristic(this.Characteristic.TargetHeatingCoolingState)
+      .on(
+        CharacteristicEventTypes.SET,
+        (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+          switch (value) {
+            case 0:
+              this.nhc2.sendProgramCommand(newAccessory.UUID, Program.Off);
+              break;
+            case 1:
+              this.nhc2.sendProgramCommand(newAccessory.UUID, Program.Day);
+              break;
+            case 2:
+              this.nhc2.sendProgramCommand(newAccessory.UUID, Program.Cool);
+              break;
+            default:
+              this.nhc2.sendProgramCommand(newAccessory.UUID, Program.Prog1);
+          }
+          callback();
+        },
+      );
+  };
 
   private processDeviceProperties(device: Device, service: Service) {
-
     // Super hacky, but for some reason every device has two services, one we added and another "AccessoryInformation".
     // We should not be modifying AccessoryInformation (This gives warnings);
     // If a better solution comes along please create a PR
-    if (service.constructor.name === 'AccessoryInformation') {
-      return
-    };
+    if (service.constructor.name === "AccessoryInformation") {
+      return;
+    }
 
     if (!!device.Properties) {
       device.Properties.forEach(property => {
@@ -466,25 +443,42 @@ class NHC2Platform implements DynamicPlatformPlugin {
         if (!!property.FanSpeed) {
           switch (property.FanSpeed) {
             case FanSpeed.Boost:
-              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(100);
-              service.getCharacteristic(this.Characteristic.On).updateValue(true);
+              service
+                .getCharacteristic(this.Characteristic.RotationSpeed)
+                .updateValue(100);
+              service
+                .getCharacteristic(this.Characteristic.On)
+                .updateValue(true);
               break;
             case FanSpeed.High:
-              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(66);
-              service.getCharacteristic(this.Characteristic.On).updateValue(true);
+              service
+                .getCharacteristic(this.Characteristic.RotationSpeed)
+                .updateValue(66);
+              service
+                .getCharacteristic(this.Characteristic.On)
+                .updateValue(true);
               break;
             case FanSpeed.Medium:
-              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(33);
-              service.getCharacteristic(this.Characteristic.On).updateValue(true);
+              service
+                .getCharacteristic(this.Characteristic.RotationSpeed)
+                .updateValue(33);
+              service
+                .getCharacteristic(this.Characteristic.On)
+                .updateValue(true);
               break;
             case FanSpeed.Low:
-              service.getCharacteristic(this.Characteristic.RotationSpeed).updateValue(0);
-              service.getCharacteristic(this.Characteristic.On).updateValue(false);
+              service
+                .getCharacteristic(this.Characteristic.RotationSpeed)
+                .updateValue(0);
+              service
+                .getCharacteristic(this.Characteristic.On)
+                .updateValue(false);
               break;
           }
         }
         if (!!property.Position) {
-          const moving = device.Properties?.find(p => p.Moving)?.Moving === "True";
+          const moving =
+            device.Properties?.find(p => p.Moving)?.Moving === "True";
           service
             .getCharacteristic(this.Characteristic.CurrentPosition)
             .updateValue(parseInt(property.Position, 10));
@@ -500,19 +494,24 @@ class NHC2Platform implements DynamicPlatformPlugin {
           }
         }
         if (!!property.AmbientTemperature) {
-          service.getCharacteristic(this.Characteristic.CurrentTemperature)
+          service
+            .getCharacteristic(this.Characteristic.CurrentTemperature)
             .updateValue(parseFloat(property.AmbientTemperature));
-          service.getCharacteristic(this.Characteristic.TemperatureDisplayUnits)
+          service
+            .getCharacteristic(this.Characteristic.TemperatureDisplayUnits)
             .updateValue(0);
         }
         if (!!property.SetpointTemperature) {
           switch (true) {
             // Niko has a min temp of 7 which homebridge cannot handle
             case parseFloat(property.SetpointTemperature) < 10:
-              service.getCharacteristic(this.Characteristic.TargetTemperature).updateValue(10);
+              service
+                .getCharacteristic(this.Characteristic.TargetTemperature)
+                .updateValue(10);
               break;
             default:
-              service.getCharacteristic(this.Characteristic.TargetTemperature)
+              service
+                .getCharacteristic(this.Characteristic.TargetTemperature)
                 .updateValue(parseFloat(property.SetpointTemperature));
               break;
           }
@@ -520,31 +519,67 @@ class NHC2Platform implements DynamicPlatformPlugin {
         if (!!property.Program) {
           switch (property.Program) {
             case Program.Off:
-              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(0);
+              service
+                .getCharacteristic(
+                  this.Characteristic.TargetHeatingCoolingState,
+                )
+                .updateValue(0);
               break;
             case Program.Day:
-              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(1);
+              service
+                .getCharacteristic(
+                  this.Characteristic.TargetHeatingCoolingState,
+                )
+                .updateValue(1);
               break;
             case Program.Cool:
-              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(2);
+              service
+                .getCharacteristic(
+                  this.Characteristic.TargetHeatingCoolingState,
+                )
+                .updateValue(2);
               break;
             default:
-              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(3);
+              service
+                .getCharacteristic(
+                  this.Characteristic.TargetHeatingCoolingState,
+                )
+                .updateValue(3);
               break;
           }
         }
         if (!!property.Demand) {
           switch (property.Demand) {
             case Demand.None:
-              service.getCharacteristic(this.Characteristic.CurrentHeatingCoolingState).updateValue(0);
+              service
+                .getCharacteristic(
+                  this.Characteristic.CurrentHeatingCoolingState,
+                )
+                .updateValue(0);
               break;
             case Demand.Heating:
-              service.getCharacteristic(this.Characteristic.CurrentHeatingCoolingState).updateValue(1);
-              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(1);
+              service
+                .getCharacteristic(
+                  this.Characteristic.CurrentHeatingCoolingState,
+                )
+                .updateValue(1);
+              service
+                .getCharacteristic(
+                  this.Characteristic.TargetHeatingCoolingState,
+                )
+                .updateValue(1);
               break;
             case Demand.Cooling:
-              service.getCharacteristic(this.Characteristic.CurrentHeatingCoolingState).updateValue(2);
-              service.getCharacteristic(this.Characteristic.TargetHeatingCoolingState).updateValue(2);
+              service
+                .getCharacteristic(
+                  this.Characteristic.CurrentHeatingCoolingState,
+                )
+                .updateValue(2);
+              service
+                .getCharacteristic(
+                  this.Characteristic.TargetHeatingCoolingState,
+                )
+                .updateValue(2);
               break;
           }
         }
