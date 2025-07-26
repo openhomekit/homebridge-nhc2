@@ -313,20 +313,21 @@ class NHC2Platform implements DynamicPlatformPlugin {
       .on(
         CharacteristicEventTypes.SET,
         (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+          const typedValue = value as number;
           switch (true) {
-            case value === 100:
+            case typedValue === 100:
               this.nhc2.sendFanSpeedCommand(
                 newAccessory.UUID,
                 FanSpeed.Boost,
               );
               break;
-            case value >= 50:
+            case typedValue >= 50:
               this.nhc2.sendFanSpeedCommand(
                 newAccessory.UUID,
                 FanSpeed.High,
               );
               break;
-            case value === 0:
+            case typedValue === 0:
               this.nhc2.sendFanSpeedCommand(
                 newAccessory.UUID,
                 FanSpeed.Low,

@@ -1,6 +1,6 @@
 {
 	"name": "@openhomekit/homebridge-nhc2",
-        "displayName": "Niko Home Control 2",
+	"displayName": "Niko Home Control 2",
 	"version": "3.3.0",
 	"description": "Niko Home Control 2 support for Homebridge",
 	"license": "MIT",
@@ -17,8 +17,8 @@
 		"url": "https://github.com/openhomekit/homebridge-nhc2/issues"
 	},
 	"engines": {
-		"node": ">=11.0.0",
-		"homebridge": ">=1.0.0"
+		"node": "^18.20.4 || ^20.15.1 || ^22",
+		"homebridge": "^1.6.0 || ^2.0.0-beta.0"
 	},
 	"main": "dist/nhc2-platform.js",
 	"files": [
@@ -32,7 +32,7 @@
 	},
 	"devDependencies": {
 		"@types/ws": "^8.5.3",
-		"homebridge": "^1.1.0",
+		"homebridge": "^2.0.0-alpha.37",
 		"prettier": "^1.19.1",
 		"rimraf": "^3.0.2",
 		"tslint": "^5.20.1",
